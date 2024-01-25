@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:trial_voice/api/api_key.dart';
 import 'form.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 var ProductName = null;
-
 var CP = null;
 var MRP = null;
 var SP = null;
@@ -230,6 +230,18 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
       // print(prompt);
       if (result.finalResult == true) {
+        if (result.recognizedWords == 'yes') {
+          showModal(currentContext);
+        } else if (result.recognizedWords == 'no') {
+          Timer(Duration(seconds: 3), () {
+            startListening();
+          });
+        } else {
+          Timer(Duration(seconds: 3), () {
+            startListening();
+          });
+        }
+
         prompt = result.recognizedWords;
         afterResponse(prompt);
       }
@@ -247,7 +259,7 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
   Future<Map<String, dynamic>> sendChatCompletionRequest(String prompt) async {
     // Replace 'YOUR_AUTH_TOKEN' with your actual OpenAI API key
-    String authToken = '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';
+    String authToken = api_key;
     String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
     // Replace this with your JSON body
@@ -353,8 +365,11 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
             startListening();
           });
         } else {
-          speak('Review');
+          await speak('Should I Scan ?');
           showModal(currentContext);
+          Timer(Duration(seconds: 3), () {
+            startListening();
+          });
         }
 
         return (productjson);
