@@ -127,15 +127,40 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Amyr AI Assist'),
+          title: const Text(
+            'Amyr AI Assist',
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
+          centerTitle: true,
         ),
         body: Column(children: [
-          const HeaderWidget(),
+          // const HeaderWidget(),
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                // color: Colors.blue,
+                borderRadius: BorderRadius.circular(10),
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black.withOpacity(0.3),
+                //     blurRadius: 10,
+                //     offset: Offset(0, 3),
+                //   ),
+                // ],
+              ),
+              child:
+                  RecognitionResultsWidget(lastWords: lastWords, level: level),
+            ),
+          ),
           Column(
             children: <Widget>[
               InitSpeechWidget(_hasSpeech, initSpeechState),
               SpeechControlWidget(_hasSpeech, speech.isListening,
-                  startListening, stopListening, cancelListening),
+                  speech.isListening ? stopListening : startListening),
               // SessionOptionsWidget(
               //   _currentLocaleId,
               //   _switchLang,
@@ -148,25 +173,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
               //   _switchOnDevice,
               // ),
             ],
-          ),
-          Expanded(
-            child: Container(
-              margin: EdgeInsets.all(16),
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child:
-                  RecognitionResultsWidget(lastWords: lastWords, level: level),
-            ),
           ),
           Expanded(
             flex: 1,
@@ -230,18 +236,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
       // print(prompt);
       if (result.finalResult == true) {
-        if (result.recognizedWords == 'yes') {
-          showModal(currentContext);
-        } else if (result.recognizedWords == 'no') {
-          Timer(Duration(seconds: 3), () {
-            startListening();
-          });
-        } else {
-          Timer(Duration(seconds: 3), () {
-            startListening();
-          });
-        }
-
         prompt = result.recognizedWords;
         afterResponse(prompt);
       }
@@ -459,17 +453,10 @@ class RecognitionResultsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        const Center(
-          child: Text(
-            'Recognized Words',
-            style: TextStyle(fontSize: 22.0),
-          ),
-        ),
         Expanded(
           child: Stack(
             children: <Widget>[
               Container(
-                color: Theme.of(context).secondaryHeaderColor,
                 child: Center(
                   child: Text(
                     lastWords,
@@ -496,7 +483,7 @@ class RecognitionResultsWidget extends StatelessWidget {
                       borderRadius: const BorderRadius.all(Radius.circular(50)),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.mic),
+                      icon: const Icon(Icons.mic_sharp),
                       onPressed: () {},
                     ),
                   ),
@@ -510,21 +497,21 @@ class RecognitionResultsWidget extends StatelessWidget {
   }
 }
 
-class HeaderWidget extends StatelessWidget {
-  const HeaderWidget({
-    Key? key,
-  }) : super(key: key);
+// class HeaderWidget extends StatelessWidget {
+//   const HeaderWidget({
+//     Key? key,
+//   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Press Start ',
-        style: TextStyle(fontSize: 22.0),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Center(
+//       child: Text(
+//         'Press Start ',
+//         style: TextStyle(fontSize: 22.0),
+//       ),
+//     );
+//   }
+// }
 
 /// Display the current error status from the speech
 /// recognizer
@@ -565,35 +552,40 @@ class ErrorWidget extends StatelessWidget {
 
 /// Controls to start and stop speech recognition
 class SpeechControlWidget extends StatelessWidget {
-  const SpeechControlWidget(this.hasSpeech, this.isListening,
-      this.startListening, this.stopListening, this.cancelListening,
+  const SpeechControlWidget(
+      this.hasSpeech, this.isListening, this.toggleListening,
       {Key? key})
       : super(key: key);
 
   final bool hasSpeech;
   final bool isListening;
-  final void Function() startListening;
-  final void Function() stopListening;
-  final void Function() cancelListening;
+  final void Function() toggleListening;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: <Widget>[
-        TextButton(
-          onPressed: !hasSpeech || isListening ? null : startListening,
-          child: const Text('Start'),
-        ),
-        TextButton(
-          onPressed: isListening ? stopListening : null,
-          child: const Text('Stop'),
-        ),
-        TextButton(
-          onPressed: isListening ? cancelListening : null,
-          child: const Text('Cancel'),
-        )
-      ],
+    return SizedBox(
+      // bottom: 16.0,
+      // right: 10.0,
+      height: 100,
+      width: 100,
+      child: FloatingActionButton(
+          isExtended: true,
+          onPressed: hasSpeech ? toggleListening : null,
+          shape: RoundedRectangleBorder(
+              side: BorderSide(
+                  color:
+                      isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
+                  width: 2.0),
+              borderRadius: BorderRadius.circular(50.0)),
+          backgroundColor: isListening ? Color(0xFFaa0505) : Color(0xFFFCC200),
+          tooltip: isListening ? 'Listening...' : 'Not listening',
+          child: Image.asset(
+            'assets/logo.png',
+            alignment: Alignment.center,
+            color: isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
+            width: 200,
+            height: 200.0,
+          )),
     );
   }
 }
