@@ -14,7 +14,8 @@ class MyHomePage extends StatefulWidget {
       required this.mRP,
       required this.productName,
       required this.quantity,
-      required this.sP})
+      required this.sP,
+      required this.context2})
       : super(key: key);
 
   var barcode;
@@ -23,6 +24,7 @@ class MyHomePage extends StatefulWidget {
   var cP;
   var sP;
   var quantity;
+  final BuildContext context2;
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -85,12 +87,14 @@ class _MyHomePageState extends State<MyHomePage> {
             isScannerActive = false;
             String barcode1 = scanData.code!;
             // Disable the scanner
+            Navigator.of(context).pop();
             showModalBottomSheet(
               isScrollControlled: true,
               isDismissible: true,
               context: context,
               builder: (BuildContext context) {
                 return AddProductModal(
+                    context1: widget.context2,
                     barcode: barcode1,
                     productName: widget.productName,
                     mRP: widget.mRP,
@@ -99,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     quantity: widget.quantity);
               },
             );
+
             scannedData = scanData.code!;
           });
         });

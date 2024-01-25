@@ -10,8 +10,6 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'form.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-
-
 var ProductName = null;
 
 var CP = null;
@@ -39,6 +37,7 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
       context: context,
       builder: (BuildContext context) {
         return AddProductModal(
+            context1: context,
             barcode: 'Scan Barcode',
             productName: ProductName,
             mRP: MRP,
@@ -248,7 +247,7 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
   Future<Map<String, dynamic>> sendChatCompletionRequest(String prompt) async {
     // Replace 'YOUR_AUTH_TOKEN' with your actual OpenAI API key
-    String authToken = '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';
+    String authToken = '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';
     String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
     // Replace this with your JSON body
@@ -529,6 +528,7 @@ class ErrorWidget extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AddProductModal(
+            context1: context,
             barcode: 'barcode',
             productName: ProductName,
             mRP: MRP,

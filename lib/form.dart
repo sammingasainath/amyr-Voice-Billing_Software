@@ -9,7 +9,8 @@ class AddProductModal extends StatefulWidget {
       required this.mRP,
       required this.productName,
       required this.quantity,
-      required this.sP})
+      required this.sP,
+      required this.context1})
       : super(key: key);
 
   var barcode;
@@ -18,6 +19,7 @@ class AddProductModal extends StatefulWidget {
   final mRP;
   final sP;
   final cP;
+  final BuildContext context1;
 
   @override
   _AddProductModalState createState() => _AddProductModalState();
@@ -80,8 +82,9 @@ class _AddProductModalState extends State<AddProductModal> {
       isDismissible: true,
       useRootNavigator: true,
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext context1) {
         return MyHomePage(
+            context2: widget.context1,
             barcode: 'barcode',
             productName: widget.productName,
             mRP: widget.mRP,
@@ -134,7 +137,10 @@ class _AddProductModalState extends State<AddProductModal> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.camera),
-                    onPressed: scanBarcode,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      scanBarcode();
+                    },
                   ),
                 ],
               ),
