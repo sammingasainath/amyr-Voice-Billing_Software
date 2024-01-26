@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'barcode_for_product.dart';
 
 class AddProductModal extends StatefulWidget {
-  AddProductModal(
-      {Key? key,
-      required this.barcode,
-      required this.cP,
-      required this.mRP,
-      required this.productName,
-      required this.quantity,
-      required this.sP,
-      required this.context1})
-      : super(key: key);
-
-  var barcode;
+  final barcode;
   final productName;
   final quantity;
   final mRP;
@@ -21,11 +12,22 @@ class AddProductModal extends StatefulWidget {
   final cP;
   final BuildContext context1;
 
+  AddProductModal({
+    Key? key,
+    required this.barcode,
+    required this.productName,
+    required this.quantity,
+    required this.mRP,
+    required this.sP,
+    required this.cP,
+    required this.context1,
+  }) : super(key: key);
+
   @override
-  _AddProductModalState createState() => _AddProductModalState();
+  AddProductModalState createState() => AddProductModalState();
 }
 
-class _AddProductModalState extends State<AddProductModal> {
+class AddProductModalState extends State<AddProductModal> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   TextEditingController productNameController = TextEditingController();
@@ -38,18 +40,6 @@ class _AddProductModalState extends State<AddProductModal> {
   String selectedUnit = 'Piece';
   String selectedSupplier = 'Default Supplier';
   String selectedCategory = 'Default Category';
-
-  List<String> fieldNames = [
-    'Product Name',
-    'Barcode',
-    'Quantity',
-    'MRP',
-    'SP',
-    'CP',
-    'Unit',
-    'Supplier Name',
-    'Category',
-  ];
 
   @override
   void initState() {
@@ -77,6 +67,7 @@ class _AddProductModalState extends State<AddProductModal> {
   }
 
   Future<void> scanBarcode() async {
+    Navigator.of(context).pop();
     showModalBottomSheet(
       isScrollControlled: true,
       isDismissible: true,
@@ -84,19 +75,48 @@ class _AddProductModalState extends State<AddProductModal> {
       context: context,
       builder: (BuildContext context1) {
         return MyHomePage(
-            context2: widget.context1,
-            barcode: 'barcode',
-            productName: widget.productName,
-            mRP: widget.mRP,
-            cP: widget.cP,
-            sP: widget.sP,
-            quantity: widget.quantity);
+          context2: widget.context1,
+          barcode: 'barcode',
+          productName: widget.productName,
+          mRP: widget.mRP,
+          cP: widget.cP,
+          sP: widget.sP,
+          quantity: widget.quantity,
+        );
       },
     );
 
     barcodeController.text = widget.barcode;
+  }
 
-    // Navigator.pop(context);
+  Future<void> _saveProduct() async {
+    try {
+      String userUid = FirebaseAuth.instance.currentUser!.uid;
+      CollectionReference productsCollection = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userUid)
+          .collection('Products');
+
+      await productsCollection.doc(widget.barcode.toString()).set({
+        'productName': productNameController.text,
+        'barcode': barcodeController.text,
+        'quantity': quantityController.text,
+        'mrp': mrpController.text,
+        'sp': spController.text,
+        'cp': cpController.text,
+        'unit': selectedUnit,
+        'supplierName': selectedSupplier,
+        'category': selectedCategory,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Product saved successfully!'),
+        ),
+      );
+    } catch (e) {
+      print('Error saving product: $e');
+    }
   }
 
   @override
@@ -138,7 +158,6 @@ class _AddProductModalState extends State<AddProductModal> {
                   IconButton(
                     icon: const Icon(Icons.camera),
                     onPressed: () {
-                      Navigator.of(context).pop();
                       scanBarcode();
                     },
                   ),
@@ -274,8 +293,7 @@ class _AddProductModalState extends State<AddProductModal> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
-                    // Form is valid, implement your save logic here
-                    // You can use the values from controllers and selected values
+                    _saveProduct();
                   }
                 },
                 child: Text('Save'),
@@ -283,7 +301,6 @@ class _AddProductModalState extends State<AddProductModal> {
               SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
-                  // Implement your cancel logic here
                   Navigator.pop(context);
                 },
                 child: Text('Cancel'),

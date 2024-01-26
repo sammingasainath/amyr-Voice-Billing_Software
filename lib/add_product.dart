@@ -128,7 +128,7 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
       home: Scaffold(
         appBar: AppBar(
           title: const Text(
-            'Amyr AI Assist',
+            'AmyR AI Assist - Stock In',
             style: TextStyle(
               color: Colors.black,
             ),
@@ -234,9 +234,18 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
     setState(() {
       lastWords = '${result.recognizedWords} - ${result.finalResult}';
 
+      // if (result.recognizedWords == 'yes' ||
+      //     result.recognizedWords == 'Yes' ||
+      //     result.recognizedWords == 'YES') {
+      //   AddProductModalState().scanBarcode();
+      // } else if (result.recognizedWords == 'no' ||
+      //     result.recognizedWords == 'No' ||
+      //     result.recognizedWords == 'NO') {}
+
       // print(prompt);
       if (result.finalResult == true) {
         prompt = result.recognizedWords;
+
         afterResponse(prompt);
       }
     });
@@ -355,15 +364,12 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
             SP == null ||
             Stock == null) {
           await speak('Please Fill $inCompleteTask');
-          Timer(Duration(seconds: 6), () {
+          Timer(Duration(seconds: 4), () {
             startListening();
           });
         } else {
-          await speak('Should I Scan ?');
+          await speak('Scan Here ?');
           showModal(currentContext);
-          Timer(Duration(seconds: 3), () {
-            startListening();
-          });
         }
 
         return (productjson);
@@ -477,13 +483,16 @@ class RecognitionResultsWidget extends StatelessWidget {
                         BoxShadow(
                             blurRadius: .26,
                             spreadRadius: level * 1.5,
-                            color: Colors.black.withOpacity(.05))
+                            color: const Color(0xFFaa0505).withOpacity(.05))
                       ],
                       color: Colors.white,
                       borderRadius: const BorderRadius.all(Radius.circular(50)),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.mic_sharp),
+                      icon: const Icon(
+                        Icons.star,
+                        color: Color(0xFFaa0505),
+                      ),
                       onPressed: () {},
                     ),
                   ),
@@ -573,9 +582,10 @@ class SpeechControlWidget extends StatelessWidget {
           onPressed: hasSpeech ? toggleListening : null,
           shape: RoundedRectangleBorder(
               side: BorderSide(
-                  color:
-                      isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
-                  width: 2.0),
+                color:
+                    isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
+                width: 2.0,
+              ),
               borderRadius: BorderRadius.circular(50.0)),
           backgroundColor: isListening ? Color(0xFFaa0505) : Color(0xFFFCC200),
           tooltip: isListening ? 'Listening...' : 'Not listening',
