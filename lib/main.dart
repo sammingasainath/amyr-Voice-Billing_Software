@@ -1,5 +1,5 @@
 import 'package:trial_voice/auth.dart';
-import 'package:trial_voice/firebase_options.dart';
+import 'package:trial_voice/api/firebase_options.dart';
 
 import 'package:flutter/material.dart';
 import 'home.dart';
