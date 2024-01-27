@@ -231,7 +231,7 @@ class AddProductModalState extends State<AddProductModal> {
                           selectedUnit = value!;
                         });
                       },
-                      items: ['Piece', 'Kg', 'g', 'ltr', 'ml']
+                      items: ['piece', 'kilograms', 'grams', 'litres', 'ml']
                           .map<DropdownMenuItem<String>>(
                             (String value) => DropdownMenuItem<String>(
                               value: value,
@@ -259,7 +259,8 @@ class AddProductModalState extends State<AddProductModal> {
                             ),
                           )
                           .toList(),
-                      decoration: const InputDecoration(labelText: 'Supplier Name'),
+                      decoration:
+                          const InputDecoration(labelText: 'Supplier Name'),
                     ),
                   ),
                 ],
