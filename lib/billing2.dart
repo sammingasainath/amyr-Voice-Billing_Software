@@ -86,7 +86,6 @@ class _SpeechSampleApp1State extends State<SpeechSampleApp1> {
   void initState() {
     super.initState();
     initSpeechState();
-    BillingPageState().productNameFocus.requestFocus();
   }
 
   /// This initializes SpeechToText. That only has to be done
@@ -643,6 +642,7 @@ class BillingPageState extends State<BillingPage> {
   void initState() {
     super.initState();
     getProductNameFromSharedPreferences();
+    productNameFocus.requestFocus();
 
     // Use the initial value passed and set it in the controller
   }
@@ -716,7 +716,7 @@ class BillingPageState extends State<BillingPage> {
                 controller: nameController,
                 suggestions: snapshot.data!,
                 textChanged: (text) {
-                  nameController.text = text;
+                  // nameController.text = text;
                 },
                 clearOnSubmit: false,
                 decoration: InputDecoration(
@@ -724,6 +724,10 @@ class BillingPageState extends State<BillingPage> {
                   border: OutlineInputBorder(),
                 ),
                 focusNode: productNameFocus,
+                textSubmitted: (text) async {
+                  await fetchProductDetails(text);
+                  // await fetchDataAndSetState();
+                },
               );
             }
           },
@@ -846,13 +850,54 @@ class BillingPageState extends State<BillingPage> {
           .get();
 
       List<String> productNames = querySnapshot.docs
-          .map((document) => document['productName'].toString())
+          .map((document) =>
+              document['productName'].toString() +
+              ';' +
+              document['barcode'].toString() +
+              ';' +
+              ' MRP: ${document['mrp'].toString()}')
           .toList();
 
       return productNames;
     } catch (e) {
       print('Error fetching product names: $e');
       return [];
+    }
+  }
+
+  Future<void> fetchProductDetails(String productName) async {
+    print('function Run Ho Rha hai');
+
+    List<String> productInfoParts = productName.split(';');
+    String secondTerm = productInfoParts[1];
+    print('Second Term: $secondTerm');
+
+    try {
+      String userUid = FirebaseAuth.instance.currentUser!.uid;
+      DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userUid)
+          .collection('Products')
+          .doc(secondTerm)
+          .get();
+
+      if (productSnapshot.exists) {
+        setState(() {
+          quantityController.text = '1';
+          nameController.text = productSnapshot['productName'].toString();
+          barcodeController.text = productSnapshot['barcode'].toString();
+          priceController.text = productSnapshot['sp'].toString();
+          setState(() {
+            selectedUnit = productSnapshot['unit'].toString();
+          });
+
+          print(
+              'Inside Fetch Product Details ${productSnapshot['productName']}, ${productSnapshot['quantity']}, ${productSnapshot['barcode']}, ${productSnapshot['price']}');
+          // You may need to adapt these field names based on your database structure
+        });
+      }
+    } catch (e) {
+      print('Error fetching product details: $e');
     }
   }
 
