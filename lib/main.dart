@@ -1,9 +1,8 @@
 import 'package:trial_voice/auth.dart';
+import 'package:trial_voice/firebase_options.dart';
 
-import 'add_product.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
-import 'api/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -22,7 +21,7 @@ void main() async {
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return const StartPage();
+              return  StartPage();
             }
             return const AuthScreen();
           },

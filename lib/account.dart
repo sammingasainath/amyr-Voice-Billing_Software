@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:trial_voice/api/firebase_options.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({Key? key}) : super(key: key);
@@ -37,14 +36,8 @@ class AccountPageState extends State<AccountPage> {
               .doc(FirebaseAuth.instance.currentUser!.uid)
               .get();
 
-      // Debugging print statement
-      print('Document Snapshot Data: ${documentSnapshot.data()}');
-
       // Check if the document exists
       if (documentSnapshot.exists) {
-        // Debugging print statement
-        print('Document Exists');
-
         // Populate the text controllers with data from the document
         setState(() {
           shopNameController.text = documentSnapshot['shopName'];
@@ -55,14 +48,6 @@ class AccountPageState extends State<AccountPage> {
           panNumberController.text = documentSnapshot['panNumber'];
           shopDescriptionController.text = documentSnapshot['shopDescription'];
         });
-
-        // Debugging print statements
-        print('Fetched Shop Name: ${documentSnapshot['shopName']}');
-        print('Fetched Address: ${documentSnapshot['address']}');
-        // Add similar print statements for other fields
-      } else {
-        // Debugging print statement
-        print('Document Does Not Exist');
       }
     } catch (e) {
       print('Error fetching data: $e');
@@ -72,11 +57,6 @@ class AccountPageState extends State<AccountPage> {
 
   Future<void> _updateUserData() async {
     try {
-      // Debugging print statements
-      print('Updating Shop Name: ${shopNameController.text}');
-      print('Updating Address: ${addressController.text}');
-      // Add similar print statements for other fields
-
       // Update the document in Firestore
       await FirebaseFirestore.instance
           .collection('users')
@@ -122,23 +102,51 @@ class AccountPageState extends State<AccountPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildCard('Shop Name', shopNameController),
-              _buildCard('Address', addressController),
-              _buildCard('Mobile Number', mobileNumberController),
-              _buildCard('Pincode', pincodeController),
-              _buildCard('GST Number', gstNumberController),
-              _buildCard('PAN Number', panNumberController),
-              _buildCard('Shop Description', shopDescriptionController),
+              _buildCard(
+                'Shop Name',
+                Icons.store,
+                shopNameController,
+              ),
+              _buildCard(
+                'Address',
+                Icons.location_on,
+                addressController,
+              ),
+              _buildCard(
+                'Mobile Number',
+                Icons.phone,
+                mobileNumberController,
+              ),
+              _buildCard(
+                'Pincode',
+                Icons.pin_drop,
+                pincodeController,
+              ),
+              _buildCard(
+                'GST Number',
+                Icons.format_list_numbered,
+                gstNumberController,
+              ),
+              _buildCard(
+                'PAN Number',
+                Icons.credit_card,
+                panNumberController,
+              ),
+              _buildCard(
+                'Shop Description',
+                Icons.description,
+                shopDescriptionController,
+              ),
             ],
           ),
         ),
       ),
-      backgroundColor:
-          Color.fromARGB(255, 255, 255, 255), // Set background color
+      backgroundColor: Colors.lightBlue[50],
     );
   }
 
-  Widget _buildCard(String label, TextEditingController controller) {
+  Widget _buildCard(
+      String label, IconData icon, TextEditingController controller) {
     return Card(
       margin: const EdgeInsets.all(8),
       color: Colors.white,
@@ -151,14 +159,22 @@ class AccountPageState extends State<AccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 20.0, // Changed font size
-                fontWeight: FontWeight.bold,
-                color:
-                    const Color.fromARGB(255, 8, 77, 133), // Changed text color
-              ),
+            Row(
+              children: [
+                Icon(
+                  icon,
+                  color: Colors.lightBlue, // Icon color
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.lightBlue, // Label text color
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8.0),
             isEditing
@@ -171,9 +187,9 @@ class AccountPageState extends State<AccountPage> {
                   )
                 : Text(
                     controller.text,
-                    style: TextStyle(
-                      fontSize: 16.0, // Changed font size
-                      color: Colors.black, // Changed text color
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black,
                     ),
                   ),
           ],

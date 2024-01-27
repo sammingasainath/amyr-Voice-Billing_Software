@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -12,56 +13,55 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:trial_voice/api/api_key.dart';
 import 'form.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'products_list.dart';
+// import 'billing.dart';
+import 'fetching_name_and_qty.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:trial_voice/add_product.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-var ProductName;
-var CP;
-var MRP;
-var SP;
-var Stock;
+class Item {
+  final String name;
+  final String quantityUnit;
+  final int quantity;
+  final double price;
+  final String barcode;
+
+  Item({
+    required this.name,
+    required this.quantityUnit,
+    required this.quantity,
+    required this.price,
+    required this.barcode,
+  });
+}
+
+var ProductName = null;
+var CP = null;
+var MRP = null;
+var SP = null;
+var Stock = null;
 var result = false;
 String inCompleteTask = '';
 BuildContext? currentContext;
+var SearchText = '';
 
-class SpeechSampleApp extends StatefulWidget {
-  const SpeechSampleApp({Key? key}) : super(key: key);
+class SpeechSampleApp1 extends StatefulWidget {
+  const SpeechSampleApp1({
+    Key? key,
+  }) : super(key: key);
 
   @override
-  State<SpeechSampleApp> createState() => _SpeechSampleAppState();
+  State<SpeechSampleApp1> createState() => _SpeechSampleApp1State();
 }
 
 /// An example that demonstrates the basic functionality of the
 /// SpeechToText plugin for using the speech recognition capability
 /// of the underlying platform.
-class _SpeechSampleAppState extends State<SpeechSampleApp> {
-  void showModal(context) async {
-    result = await showModalBottomSheet(
-      isScrollControlled: true,
-      isDismissible: true,
-      context: context,
-      builder: (BuildContext context) {
-        return AddProductModal(
-            context1: context,
-            barcode: 'Scan Barcode',
-            productName: ProductName,
-            mRP: MRP,
-            cP: CP,
-            sP: SP,
-            quantity: Stock);
-      },
-    );
-
-    if (result) {
-      setState(() {
-        ProductName = null;
-        CP = null;
-        MRP = null;
-        SP = null;
-        Stock = null;
-        lastWords = '';
-      });
-    }
-  }
-
+class _SpeechSampleApp1State extends State<SpeechSampleApp1> {
   bool _hasSpeech = false;
   bool _logEvents = false;
   bool _onDevice = false;
@@ -86,6 +86,7 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
   void initState() {
     super.initState();
     initSpeechState();
+    BillingPageState().productNameFocus.requestFocus();
   }
 
   /// This initializes SpeechToText. That only has to be done
@@ -141,8 +142,9 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+          backgroundColor: const Color(0xFFFCC200),
           title: const Text(
-            'AmyR AI Assist - Stock In',
+            'AmyR AI Assist - Billing',
             style: TextStyle(
               color: Colors.black,
             ),
@@ -150,43 +152,44 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
           centerTitle: true,
         ),
         body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(30),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: RecognitionResultsWidget(
-                    lastWords: lastWords, level: level),
-              ),
-            ),
+            Flexible(child: BillingPage()),
+            // Expanded(
+            //   child: Container(
+            //     padding: EdgeInsets.all(30),
+            //     decoration: BoxDecoration(
+            //       borderRadius: BorderRadius.circular(10),
+            //     ),
+            //     child: RecognitionResultsWidget(
+            //         lastWords: lastWords, level: level),
+            //   ),
+            // ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                SpeechControlWidget(
-                  _hasSpeech,
-                  speech.isListening,
-                  speech.isListening ? stopListening : startListening,
-                ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     InitSpeechWidget(_hasSpeech, initSpeechState),
-                    SpeechStatusWidget(speech: speech),
+                    RecognitionResultsWidget(lastWords: lastWords),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const ProductListViewScreen(),
+                            builder: (context) => ProductListViewScreen(),
                           ),
                         );
                       },
                       child: const Text('Product List'),
                     ),
                   ],
+                ),
+                SpeechControlWidget(
+                  _hasSpeech,
+                  speech.isListening,
+                  speech.isListening ? stopListening : startListening,
                 ),
               ],
             ),
@@ -274,128 +277,47 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
   Future<Map<String, dynamic>> sendChatCompletionRequest(String prompt) async {
     // Replace 'YOUR_AUTH_TOKEN' with your actual OpenAI API key
-    String authToken = api_key;
-    String apiUrl = 'https://api.openai.com/v1/chat/completions';
+    var result = await sendChatCompletionRequest1(prompt);
 
-    // Replace this with your JSON body
-    String requestBody = '''
-    {
-      "messages": [
-        {
-          "role": "system",
-          "content": "You are supposed to return a pure json object in the desired format according to the prompt, Do not return \\n and extra things in the output "
-        },
-        {
-          "role": "user",
-          "content": " Extract ProductName , MRP, SP, CP and Stock and return the object,if there is no ProductName or no MRP or no SP or no CP or no Stock , set the respective value as null , the json object should be like object like {productName:,MRP:,CP:,SP:,Stock}, in which the Product Name is a String, and MRP,CP,SP,Stock are Numbers, so please see that only numbers are there in this field, for this message :$prompt"
-        }
-      ],
-      "model": "gpt-3.5-turbo",
-      "max_tokens": 200
+    print('Result is $result');
+
+    if (result['productName'] == null) {
+      await speak('Please Fill $inCompleteTask');
+      Timer(Duration(seconds: 4), () {
+        startListening();
+      });
+    } else {
+      await speak('Scan Here ?');
+      setState(() {
+        saveResultToSharedPreferences(result['productName']);
+        Navigator.pop(context);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SpeechSampleApp1(),
+          ),
+        );
+        BillingPageState().productNameFocus.requestFocus();
+      });
     }
-  ''';
 
-    try {
-      var response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-        body: requestBody,
-      );
+    //From Here I have to Change ;;;;
 
-      if (response.statusCode == 200) {
-        // print(response.body);
+    return result;
+  }
 
-        inCompleteTask = '';
+  Future<void> saveResultToSharedPreferences(String productName) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('productName', productName);
 
-        Map<String, dynamic> apiResponse = json.decode(response.body);
-        // String id = json.decode(response.body)['id'];
-        // print(id);
+    print('Turr');
 
-        String message = apiResponse['choices'][0]['message']['content'];
-        Map<String, dynamic> productjson = json.decode(message);
+    print(prefs.getString('productName'));
 
-        if ((productjson['productName'] != null)) {
-          ProductName = productjson['productName'];
-          print(ProductName);
-        } else if (ProductName != null) {
-          ProductName = ProductName;
-        } else {
-          inCompleteTask += 'Product Name,';
-        }
+    // Notify the BillingPage widget about the update
 
-        if (productjson['MRP'] != null) {
-          MRP = productjson['MRP'];
-          print(MRP);
-        } else if (MRP != null) {
-          MRP = MRP;
-        } else {
-          inCompleteTask += 'MRP,';
-        }
-
-        if (productjson['CP'] != null) {
-          CP = productjson['CP'];
-          print(CP);
-        } else if (CP != null) {
-          CP = CP;
-        } else {
-          inCompleteTask += 'CP,';
-        }
-
-        if (productjson['SP'] != null) {
-          SP = productjson['SP'];
-          print(SP);
-        } else if (SP != null) {
-          SP = SP;
-        } else {
-          inCompleteTask += 'SP,';
-        }
-
-        if (productjson['Stock'] != null) {
-          Stock = productjson['Stock'];
-          print(Stock);
-        } else if (Stock != null) {
-          Stock = Stock;
-        } else {
-          inCompleteTask += 'Stock,';
-        }
-
-        // String role = message['role'];
-        // print(role);
-
-        print(message);
-        // setState(() {
-        //   lastWords = message.toString();
-        // });
-
-        if (ProductName == null ||
-            MRP == null ||
-            CP == null ||
-            SP == null ||
-            Stock == null) {
-          await speak('Please Fill $inCompleteTask');
-          Timer(const Duration(seconds: 4), () {
-            startListening();
-          });
-        } else {
-          await speak('Scan Here ?');
-          showModal(currentContext);
-        }
-
-        return (productjson);
-      } else {
-        print('Error: ${response.statusCode}');
-        // print('Response Body: ${response.body}');
-        // Handle errors here if needed
-        return {'error': 'Failed to get response'};
-      }
-    } catch (error) {
-      print('Error: $error');
-      // Handle errors here if needed
-      return {'error': 'Failed to make the request'};
-    }
+    BillingPageState().getProductNameFromSharedPreferences();
   }
 
   void afterResponse(String prompt) async {
@@ -408,7 +330,7 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
       // await extractInformationFromApiResponse(value);
       // print(extractedInfo);
       setState(() {
-        lastWords = value.toString();
+        // lastWords = value.toString();
       });
     });
   }
@@ -461,57 +383,30 @@ class RecognitionResultsWidget extends StatelessWidget {
   const RecognitionResultsWidget({
     Key? key,
     required this.lastWords,
-    required this.level,
   }) : super(key: key);
 
   final String lastWords;
-  final double level;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: Stack(
-            children: <Widget>[
-              Container(
-                child: Center(
-                  child: Text(
-                    lastWords,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                bottom: 600,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                            blurRadius: .26,
-                            spreadRadius: level * 1.5,
-                            color: const Color(0xFFaa0505).withOpacity(.05))
-                      ],
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.all(Radius.circular(50)),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.star,
-                        color: Color(0xFFaa0505),
-                      ),
-                      onPressed: () {},
-                    ),
-                  ),
-                ),
-              ),
-            ],
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 5,
+            spreadRadius: 2,
+            color: Colors.grey.withOpacity(0.3),
           ),
-        ),
-      ],
+        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        lastWords,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 16),
+      ),
     );
   }
 }
@@ -564,7 +459,7 @@ class ErrorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
-      child: const Text(''),
+      child: Text(''),
     );
   }
 }
@@ -593,16 +488,15 @@ class SpeechControlWidget extends StatelessWidget {
           shape: RoundedRectangleBorder(
               side: BorderSide(
                 color:
-                    isListening ? const Color(0xFFFCC200) : const Color(0xFFaa0505),
+                    isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
                 width: 2.0,
               ),
               borderRadius: BorderRadius.circular(50.0)),
-          backgroundColor: isListening ? const Color(0xFFaa0505) : const Color(0xFFFCC200),
-          tooltip: isListening ? 'Listening...' : 'Not listening',
+          backgroundColor: isListening ? Color(0xFFaa0505) : Color(0xFFFCC200),
           child: Image.asset(
             'assets/logo.png',
             alignment: Alignment.center,
-            color: isListening ? const Color(0xFFFCC200) : const Color(0xFFaa0505),
+            color: isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
             width: 200,
             height: 200.0,
           )),
@@ -672,15 +566,13 @@ class SpokenTextWidget extends StatelessWidget {
     return Center(
       child: Text(
         lastWords,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
 }
 
 class ProductListViewScreen extends StatefulWidget {
-  const ProductListViewScreen({super.key});
-
   @override
   _ProductListViewScreenState createState() => _ProductListViewScreenState();
 }
@@ -701,17 +593,17 @@ class _ProductListViewScreenState extends State<ProductListViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product List'),
+        title: Text('Product List'),
       ),
       body: FutureBuilder<List<DocumentSnapshot>>(
         future: _getProducts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No products found.'));
+            return Center(child: Text('No products found.'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
@@ -728,5 +620,270 @@ class _ProductListViewScreenState extends State<ProductListViewScreen> {
         },
       ),
     );
+  }
+}
+
+class BillingPage extends StatefulWidget {
+  @override
+  BillingPageState createState() => BillingPageState();
+
+  const BillingPage({Key? key}) : super(key: key);
+}
+
+class BillingPageState extends State<BillingPage> {
+  final FocusNode productNameFocus = FocusNode();
+
+  final TextEditingController nameController = TextEditingController();
+
+  final TextEditingController quantityController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+  final TextEditingController barcodeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    getProductNameFromSharedPreferences();
+
+    // Use the initial value passed and set it in the controller
+  }
+
+  Future<void> fetchDataAndSetState() async {
+    // Simulating an asynchronous operation, e.g., fetching data
+    await Future.delayed(Duration(seconds: 2));
+
+    // Update the state using setState
+    setState(() {});
+  }
+
+  Future<void> getProductNameFromSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var productName1 = prefs.getString('productName');
+
+    print('Furr');
+
+    print(productName1?.toString());
+
+    if (productName1 != null && productName1.isNotEmpty) {
+      print('If Loop Is Excecuting');
+
+      nameController.text = productName1.toString();
+    }
+  }
+
+  String selectedUnit = 'units';
+  List<String> quantityUnits = [
+    'units',
+    'piece',
+    'grams',
+    'kilograms',
+    'litres',
+    'ml'
+  ];
+
+  List<Item> items = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildForm(),
+          const SizedBox(height: 20),
+          _buildItemList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FutureBuilder<List<String>>(
+          future: _getProductNames(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Text('No products found.');
+            } else {
+              return SimpleAutoCompleteTextField(
+                key: GlobalKey(),
+                controller: nameController,
+                suggestions: snapshot.data!,
+                textChanged: (text) {
+                  nameController.text = text;
+                },
+                clearOnSubmit: false,
+                decoration: InputDecoration(
+                  labelText: 'Product Name',
+                  border: OutlineInputBorder(),
+                ),
+                focusNode: productNameFocus,
+              );
+            }
+          },
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const Text('Quantity Unit: '),
+            DropdownButton<String>(
+              value: selectedUnit,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedUnit = newValue!;
+                });
+              },
+              items: quantityUnits.map<DropdownMenuItem<String>>(
+                (String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                },
+              ).toList(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: quantityController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: 'Quantity',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: barcodeController,
+          keyboardType: TextInputType.text,
+          decoration: InputDecoration(
+            labelText: 'Barcode',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: priceController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: 'Price',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            _addItem();
+          },
+          style: ElevatedButton.styleFrom(
+            primary: Colors.blue, // background color
+            onPrimary: Colors.white, // text color
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Text(
+              'Add Item',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemList() {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          return Dismissible(
+            key: Key(items[index].name),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              setState(() {
+                items.removeAt(index);
+              });
+            },
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.all(10),
+              child: const Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
+            ),
+            child: ListTile(
+              title: Text('Name: ${items[index].name}'),
+              subtitle: Text(
+                'Quantity: ${items[index].quantity} ${items[index].quantityUnit} | Price: \$${items[index].price.toStringAsFixed(2)}',
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<List<String>> _getProductNames() async {
+    try {
+      String userUid = FirebaseAuth.instance.currentUser!.uid;
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userUid)
+          .collection(
+              'Products') // Assuming 'Products' is the subcollection name
+          .get();
+
+      List<String> productNames = querySnapshot.docs
+          .map((document) => document['productName'].toString())
+          .toList();
+
+      return productNames;
+    } catch (e) {
+      print('Error fetching product names: $e');
+      return [];
+    }
+  }
+
+  void dosomething() {
+    setState(() {
+      print('Inside Billing Screen ${ProductName.toString()}');
+      nameController.text = ProductName.toString();
+    });
+  }
+
+  void _addItem() {
+    if (nameController.text.isNotEmpty &&
+        quantityController.text.isNotEmpty &&
+        priceController.text.isNotEmpty) {
+      final newItem = Item(
+        name: nameController.text,
+        quantityUnit: selectedUnit,
+        quantity: int.parse(quantityController.text),
+        price: double.parse(priceController.text),
+        barcode: barcodeController.text,
+      );
+
+      setState(() {
+        items.add(newItem);
+      });
+
+      // Clear the text fields after adding an item
+      nameController.clear();
+      quantityController.clear();
+      priceController.clear();
+      barcodeController.clear();
+    }
   }
 }

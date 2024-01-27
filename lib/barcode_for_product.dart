@@ -1,7 +1,6 @@
 import 'form.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:trial_voice/form.dart';
 // import 'package:alan_voice/alan_voice.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -28,13 +27,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final productName;
-  final MRP;
-  final CP;
+  final productName = '';
+  final MRP = '';
+  final CP = '';
 
-  final SP;
-  final Stock;
-  _MyHomePageState({this.productName, this.MRP, this.CP, this.SP, this.Stock});
+  final SP = '';
+  final Stock = '';
+  _MyHomePageState();
   late QRViewController controller;
   String scannedData = "";
   bool isScannerActive = true; // Add this boolean flag
@@ -46,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text("Billing..."),
         actions: [
           IconButton(
-            icon: Icon(Icons.blinds_closed_rounded),
+            icon: const Icon(Icons.blinds_closed_rounded),
             onPressed: () {
               /// Activate Alan Button
               // AlanVoice.playText("See The Bill Now");
@@ -56,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          Container(
+          SizedBox(
             height: 200, // Adjust the height as needed
             child: isScannerActive ? _buildQrView(context) : Container(),
           ),
@@ -65,12 +64,12 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextField(
               readOnly: true,
               controller: TextEditingController(text: scannedData),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Scanned Data",
               ),
             ),
           ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
         ],
       ),
     );

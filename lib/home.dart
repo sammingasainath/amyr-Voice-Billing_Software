@@ -1,14 +1,14 @@
 import 'package:circular_menu/circular_menu.dart';
 import 'account.dart';
 import 'package:flutter/material.dart';
-import 'billing.dart';
 import 'transactions.dart';
 import 'add_product.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'billing2.dart';
 
 class StartPage extends StatelessWidget {
-  const StartPage({Key? key}) : super(key: key);
+  StartPage({Key? key}) : super(key: key);
+  final TextEditingController billingNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,8 @@ class StartPage extends StatelessWidget {
             onPressed: () {
               FirebaseAuth.instance.signOut();
             },
-            icon: Icon(Icons.logout),
-            label: Text('Log Out'),
+            icon: const Icon(Icons.logout),
+            label: const Text('Log Out'),
           )
         ],
       ),
@@ -82,7 +82,9 @@ class StartPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const BillingPage(),
+                    builder: (context) => SpeechSampleApp1(
+                     
+                    ),
                   ),
                 );
               },

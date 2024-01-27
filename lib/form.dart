@@ -12,7 +12,7 @@ class AddProductModal extends StatefulWidget {
   final cP;
   final BuildContext context1;
 
-  AddProductModal({
+  const AddProductModal({
     Key? key,
     required this.barcode,
     required this.productName,
@@ -67,7 +67,6 @@ class AddProductModalState extends State<AddProductModal> {
   }
 
   Future<void> scanBarcode() async {
-    Navigator.of(context).pop();
     showModalBottomSheet(
       isScrollControlled: true,
       isDismissible: true,
@@ -110,7 +109,7 @@ class AddProductModalState extends State<AddProductModal> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Product saved successfully!'),
         ),
       );
@@ -138,9 +137,9 @@ class AddProductModalState extends State<AddProductModal> {
                   }
                   return null;
                 },
-                decoration: InputDecoration(labelText: 'Product Name'),
+                decoration: const InputDecoration(labelText: 'Product Name'),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               Row(
                 children: [
                   Expanded(
@@ -175,7 +174,7 @@ class AddProductModalState extends State<AddProductModal> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Quantity'),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               Row(
                 children: [
                   Expanded(
@@ -188,10 +187,10 @@ class AddProductModalState extends State<AddProductModal> {
                         return null;
                       },
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: 'MRP'),
+                      decoration: const InputDecoration(labelText: 'MRP'),
                     ),
                   ),
-                  SizedBox(width: 16.0),
+                  const SizedBox(width: 16.0),
                   Expanded(
                     child: TextFormField(
                       controller: spController,
@@ -202,10 +201,10 @@ class AddProductModalState extends State<AddProductModal> {
                         return null;
                       },
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: 'SP'),
+                      decoration: const InputDecoration(labelText: 'SP'),
                     ),
                   ),
-                  SizedBox(width: 16.0),
+                  const SizedBox(width: 16.0),
                   Expanded(
                     child: TextFormField(
                       controller: cpController,
@@ -216,12 +215,12 @@ class AddProductModalState extends State<AddProductModal> {
                         return null;
                       },
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: 'CP'),
+                      decoration: const InputDecoration(labelText: 'CP'),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               Row(
                 children: [
                   Expanded(
@@ -240,10 +239,10 @@ class AddProductModalState extends State<AddProductModal> {
                             ),
                           )
                           .toList(),
-                      decoration: InputDecoration(labelText: 'Unit'),
+                      decoration: const InputDecoration(labelText: 'Unit'),
                     ),
                   ),
-                  SizedBox(width: 16.0),
+                  const SizedBox(width: 16.0),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: selectedSupplier,
@@ -260,12 +259,12 @@ class AddProductModalState extends State<AddProductModal> {
                             ),
                           )
                           .toList(),
-                      decoration: InputDecoration(labelText: 'Supplier Name'),
+                      decoration: const InputDecoration(labelText: 'Supplier Name'),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               Row(
                 children: [
                   Expanded(
@@ -284,26 +283,27 @@ class AddProductModalState extends State<AddProductModal> {
                             ),
                           )
                           .toList(),
-                      decoration: InputDecoration(labelText: 'Category'),
+                      decoration: const InputDecoration(labelText: 'Category'),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
                     _saveProduct();
                   }
+                  Navigator.pop(context, true);
                 },
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
             ],
           ),

@@ -37,6 +37,7 @@ dependencies:
   autocomplete_textfield: ^2.0.1
   circular_menu: ^2.0.1
   telephony: ^0.2.0
+  shared_preferences: ^2.2.2
 
 
   # The following adds the Cupertino Icons font to your application.
