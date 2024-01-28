@@ -13,7 +13,7 @@ void main() async {
   );
   runApp(
     MaterialApp(
-        title: 'AmyR - Automate my Retail',
+        title: 'AmyR- Automate my Retail',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
