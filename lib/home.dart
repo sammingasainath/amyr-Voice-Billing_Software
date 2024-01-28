@@ -1,5 +1,7 @@
 import 'package:circular_menu/circular_menu.dart';
+import 'package:trial_voice/chatbot.dart';
 import 'package:trial_voice/reminder.dart';
+import 'package:trial_voice/reports.dart';
 import 'account.dart';
 import 'package:flutter/material.dart';
 import 'transactions.dart';
@@ -48,7 +50,12 @@ class StartPage extends StatelessWidget {
             ),
             CircularMenuItem(
               onTap: () {
-                // Handle Reports button tap
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FullScreenImagePage(),
+                  ),
+                );
               },
               icon: Icons.bar_chart,
               color: Colors.green, // Change the color here
@@ -92,7 +99,12 @@ class StartPage extends StatelessWidget {
             ),
             CircularMenuItem(
               onTap: () {
-                // Handle AmyR Assistant button tap
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChatBotPage(),
+                  ),
+                );
               },
               icon: Icons.assistant,
               color: Colors.teal, // Change the color here

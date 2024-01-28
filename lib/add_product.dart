@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:trial_voice/added_list.dart';
 import 'package:trial_voice/api/api_key.dart';
 import 'form.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -140,6 +141,11 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        floatingActionButton: SpeechControlWidget(
+          _hasSpeech,
+          speech.isListening,
+          speech.isListening ? stopListening : startListening,
+        ),
         appBar: AppBar(
           leading: BackButton(
             onPressed: Navigator.of(context).pop,
@@ -148,9 +154,12 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
             'AmyR AI Assist - Stock In',
             style: TextStyle(
               color: Colors.black,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
           ),
           centerTitle: true,
+          backgroundColor: Colors.blueAccent,
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -160,38 +169,51 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
                 padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
+                  color: Colors.grey[200],
                 ),
                 child: RecognitionResultsWidget(
-                    lastWords: lastWords, level: level),
+                  lastWords: lastWords,
+                  level: level,
+                ),
               ),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SpeechControlWidget(
-                  _hasSpeech,
-                  speech.isListening,
-                  speech.isListening ? stopListening : startListening,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    InitSpeechWidget(_hasSpeech, initSpeechState),
-                    SpeechStatusWidget(speech: speech),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ProductListViewScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('Product List'),
-                    ),
-                  ],
-                ),
+                SpeechStatusWidget(speech: speech),
               ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProductListViewScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.blueAccent,
+                      onPrimary: Colors.white,
+                    ),
+                    child: const Text(
+                      'Product List',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      InitSpeechWidget(_hasSpeech, initSpeechState),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -459,84 +481,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
   }
 }
 
-/// Displays the most recently recognized words and the sound level.
-class RecognitionResultsWidget extends StatelessWidget {
-  const RecognitionResultsWidget({
-    Key? key,
-    required this.lastWords,
-    required this.level,
-  }) : super(key: key);
-
-  final String lastWords;
-  final double level;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: Stack(
-            children: <Widget>[
-              Container(
-                child: Center(
-                  child: Text(
-                    lastWords,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                bottom: 600,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                            blurRadius: .26,
-                            spreadRadius: level * 1.5,
-                            color: const Color(0xFFaa0505).withOpacity(.05))
-                      ],
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.all(Radius.circular(50)),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.star,
-                        color: Color(0xFFaa0505),
-                      ),
-                      onPressed: () {},
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// class HeaderWidget extends StatelessWidget {
-//   const HeaderWidget({
-//     Key? key,
-//   }) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Center(
-//       child: Text(
-//         'Press Start ',
-//         style: TextStyle(fontSize: 22.0),
-//       ),
-//     );
-//   }
-// }
-
-/// Display the current error status from the speech
-/// recognizer
 class ErrorWidget extends StatelessWidget {
   const ErrorWidget({
     Key? key,
@@ -573,48 +517,6 @@ class ErrorWidget extends StatelessWidget {
 }
 
 /// Controls to start and stop speech recognition
-class SpeechControlWidget extends StatelessWidget {
-  const SpeechControlWidget(
-      this.hasSpeech, this.isListening, this.toggleListening,
-      {Key? key})
-      : super(key: key);
-
-  final bool hasSpeech;
-  final bool isListening;
-  final void Function() toggleListening;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      // bottom: 16.0,
-      // right: 10.0,
-      height: 100,
-      width: 100,
-      child: FloatingActionButton(
-          isExtended: true,
-          onPressed: hasSpeech ? toggleListening : null,
-          shape: RoundedRectangleBorder(
-              side: BorderSide(
-                color: isListening
-                    ? const Color(0xFFFCC200)
-                    : const Color(0xFFaa0505),
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(50.0)),
-          backgroundColor:
-              isListening ? const Color(0xFFaa0505) : const Color(0xFFFCC200),
-          tooltip: isListening ? 'Listening...' : 'Not listening',
-          child: Image.asset(
-            'assets/logo.png',
-            alignment: Alignment.center,
-            color:
-                isListening ? const Color(0xFFFCC200) : const Color(0xFFaa0505),
-            width: 200,
-            height: 200.0,
-          )),
-    );
-  }
-}
 
 class InitSpeechWidget extends StatelessWidget {
   const InitSpeechWidget(this.hasSpeech, this.initSpeechState, {Key? key})
@@ -679,59 +581,6 @@ class SpokenTextWidget extends StatelessWidget {
       child: Text(
         lastWords,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class ProductListViewScreen extends StatefulWidget {
-  const ProductListViewScreen({super.key});
-
-  @override
-  _ProductListViewScreenState createState() => _ProductListViewScreenState();
-}
-
-class _ProductListViewScreenState extends State<ProductListViewScreen> {
-  Future<List<DocumentSnapshot>> _getProducts() async {
-    String userUid = FirebaseAuth.instance.currentUser!.uid;
-    CollectionReference productsCollection = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userUid)
-        .collection('Products');
-
-    QuerySnapshot querySnapshot = await productsCollection.get();
-    return querySnapshot.docs;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Product List'),
-      ),
-      body: FutureBuilder<List<DocumentSnapshot>>(
-        future: _getProducts(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No products found.'));
-          } else {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                var productData = snapshot.data![index].data() as Map;
-                return ListTile(
-                  title: Text(productData['productName']),
-                  subtitle: Text('Barcode: ${productData['barcode']}'),
-                  // Add more details as needed
-                );
-              },
-            );
-          }
-        },
       ),
     );
   }

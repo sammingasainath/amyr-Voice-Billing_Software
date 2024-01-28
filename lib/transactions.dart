@@ -4,8 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 void main() {
   runApp(
-    const MaterialApp(
-      home: BillListPage(),
+    MaterialApp(
+      home: const BillListPage(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.blue, // Set the primary color to blue
+        ),
+      ),
     ),
   );
 }
@@ -34,7 +39,6 @@ class _BillListPageState extends State<BillListPage> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        // Use Map<String, dynamic>.from to create a new map with the correct type
         Map<String, dynamic> typedBillData =
             Map<String, dynamic>.from(billData);
 
@@ -44,7 +48,7 @@ class _BillListPageState extends State<BillListPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Bill Details',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -53,7 +57,6 @@ class _BillListPageState extends State<BillListPage> {
               Text('Customer Number: ${typedBillData['customerNumber']}'),
               Text('Payment Mode: ${typedBillData['paymentMode']}'),
               Text('Total Amount: ₹${typedBillData['totalAmount']}'),
-              // Add more details as needed
             ],
           ),
         );
@@ -66,6 +69,14 @@ class _BillListPageState extends State<BillListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bill List'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              // Implement your filter logic here
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<DocumentSnapshot>>(
         future: _getBills(),
@@ -81,12 +92,22 @@ class _BillListPageState extends State<BillListPage> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 var billData = snapshot.data![index].data() as Map;
-                return ListTile(
-                  title: Text('Bill ID: ${snapshot.data![index].id}'),
-                  subtitle: Text('Total Amount: ₹${billData['totalAmount']}'),
-                  onTap: () {
-                    _showBillDetails(context, billData);
-                  },
+                return Card(
+                  color: const Color.fromARGB(255, 30, 157, 216),
+                  elevation: 3,
+                  margin: const EdgeInsets.all(8),
+                  child: ListTile(
+                    title: Text(
+                      'Bill ID: ${snapshot.data![index].id}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text('Total Amount: ₹${billData['totalAmount']}'),
+                    trailing: Icon(Icons
+                        .keyboard_arrow_down_sharp), // Add your desired icon
+                    onTap: () {
+                      _showBillDetails(context, billData);
+                    },
+                  ),
                 );
               },
             );

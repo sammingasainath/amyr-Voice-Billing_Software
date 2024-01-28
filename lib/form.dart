@@ -37,7 +37,7 @@ class AddProductModalState extends State<AddProductModal> {
   TextEditingController spController = TextEditingController();
   TextEditingController cpController = TextEditingController();
 
-  String selectedUnit = 'Piece';
+  String selectedUnit = 'piece';
   String selectedSupplier = 'Default Supplier';
   String selectedCategory = 'Default Category';
 
