@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trial_voice/bill_generation.dart' as bill;
+import 'package:trial_voice/payment_qr_code.dart';
+import 'package:whatsapp_share/whatsapp_share.dart';
 import 'billing2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,6 +79,9 @@ class _BillingScreenState extends State<BillingScreen> {
     BillID = '${billReference.id}';
     print(BillID);
 
+    var url =
+        'https://script.google.com/macros/s/AKfycbwqGKj67u9Ir6JRCPWQ5P3BZceDqLmzNIG4SP1n4Xhq0hIClTVQndB5C78aLKNTIrsPLw/exec?billID=$BillID&userID=$userUid';
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // Save billing details
@@ -87,11 +92,25 @@ class _BillingScreenState extends State<BillingScreen> {
         widget.items.map((item) => jsonEncode(item.toJson())).toList());
     prefs.setDouble('totalAmount', calculateTotalAmount());
 
+    // Clear the items list
+
+    //clear the shared preferences
+
+    SharedPreferences prefs1 = await SharedPreferences.getInstance();
+    prefs1.remove('items');
+    prefs1.setStringList('items',
+        widget.items.map((item) => jsonEncode(item.toJson())).toList());
+
     // Send the bill to the customer via WhatsApp (you may need to implement this)
     // sendBillToWhatsApp(billData);
 
     // Navigate back to the previous screen
-    // Navigator.pop(context);
+    WhatsappShare.share(
+        text: 'THank you for shopping with us. Here is your bill.',
+        phone: customerNumberController.text,
+        linkUrl: url //country code + phone number
+        );
+    Navigator.pop(context);
   }
 
   double calculateTotalAmount() {
@@ -100,6 +119,19 @@ class _BillingScreenState extends State<BillingScreen> {
       totalAmount += item.price * item.quantity;
     }
     return totalAmount;
+  }
+
+  void showModal(context) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      isDismissible: true,
+      context: context,
+      builder: (BuildContext context) {
+        return MyQRCodeScreen(
+          amount: calculateTotalAmount().toStringAsFixed(2),
+        );
+      },
+    );
   }
 
   Widget _buildItemList() {
@@ -192,6 +224,11 @@ class _BillingScreenState extends State<BillingScreen> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(labelText: 'Customer Number'),
               ),
+              IconButton(
+                  onPressed: () {
+                    showModal(context);
+                  },
+                  icon: Icon(Icons.qr_code)),
               SizedBox(height: 10),
               DropdownButton<String>(
                 value: selectedPaymentMode,
@@ -211,15 +248,6 @@ class _BillingScreenState extends State<BillingScreen> {
               ElevatedButton(
                 onPressed: () async {
                   saveBillToFirestore();
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => bill.BillScreen1(),
-                    ),
-                  );
                 },
                 child: Text('Save Bill'),
               ),
