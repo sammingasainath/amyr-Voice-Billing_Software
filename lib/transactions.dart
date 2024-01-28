@@ -1,120 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() {
   runApp(
     const MaterialApp(
-      home: LastTransactionsPage(),
+      home: BillListPage(),
     ),
   );
 }
 
-class LastTransactionsPage extends StatelessWidget {
-  const LastTransactionsPage({Key? key}) : super(key: key);
+class BillListPage extends StatefulWidget {
+  const BillListPage({Key? key}) : super(key: key);
+
+  @override
+  _BillListPageState createState() => _BillListPageState();
+}
+
+class _BillListPageState extends State<BillListPage> {
+  String userUid = FirebaseAuth.instance.currentUser!.uid;
+
+  Future<List<DocumentSnapshot>> _getBills() async {
+    CollectionReference billsCollection = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userUid)
+        .collection('Bills');
+
+    QuerySnapshot querySnapshot = await billsCollection.get();
+    return querySnapshot.docs;
+  }
+
+  void _showBillDetails(BuildContext context, Map<dynamic, dynamic> billData) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        // Use Map<String, dynamic>.from to create a new map with the correct type
+        Map<String, dynamic> typedBillData =
+            Map<String, dynamic>.from(billData);
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Bill Details',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text('Customer Name: ${typedBillData['customerName']}'),
+              Text('Customer Number: ${typedBillData['customerNumber']}'),
+              Text('Payment Mode: ${typedBillData['paymentMode']}'),
+              Text('Total Amount: ₹${typedBillData['totalAmount']}'),
+              // Add more details as needed
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Last Transactions'),
+        title: const Text('Bill List'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Last Transactions',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: transactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = transactions[index];
-                  return TransactionCard(transaction: transaction);
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class Transaction {
-  final String date;
-  final String description;
-  final double amount;
-  final String modeOfPayment;
-
-  Transaction({
-    required this.date,
-    required this.description,
-    required this.amount,
-    required this.modeOfPayment,
-  });
-}
-
-class TransactionCard extends StatelessWidget {
-  final Transaction transaction;
-
-  const TransactionCard({Key? key, required this.transaction}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue,
-          child: Icon(
-            transaction.modeOfPayment == 'Cash'
-                ? Icons.money
-                : transaction.modeOfPayment == 'Card'
-                    ? Icons.credit_card
-                    : Icons.account_balance_wallet,
-            color: Colors.white,
-          ),
-        ),
-        title: Text(
-          '${transaction.description} - \$${transaction.amount.toStringAsFixed(2)}',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          '${transaction.date} - ${transaction.modeOfPayment}',
-        ),
+      body: FutureBuilder<List<DocumentSnapshot>>(
+        future: _getBills(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No bills found.'));
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                var billData = snapshot.data![index].data() as Map;
+                return ListTile(
+                  title: Text('Bill ID: ${snapshot.data![index].id}'),
+                  subtitle: Text('Total Amount: ₹${billData['totalAmount']}'),
+                  onTap: () {
+                    _showBillDetails(context, billData);
+                  },
+                );
+              },
+            );
+          }
+        },
       ),
     );
   }
 }
-
-final List<Transaction> transactions = [
-  Transaction(
-    date: '2022-01-01',
-    description: 'Groceries',
-    amount: 50.0,
-    modeOfPayment: 'Card',
-  ),
-  Transaction(
-    date: '2022-01-05',
-    description: 'Dinner',
-    amount: 30.0,
-    modeOfPayment: 'Cash',
-  ),
-  Transaction(
-    date: '2022-01-10',
-    description: 'Electronics',
-    amount: 120.0,
-    modeOfPayment: 'Card',
-  ),
-  Transaction(
-    date: '2022-01-15',
-    description: 'Lunch',
-    amount: 25.0,
-    modeOfPayment: 'Cash',
-  ),
-];

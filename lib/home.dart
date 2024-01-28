@@ -1,10 +1,12 @@
 import 'package:circular_menu/circular_menu.dart';
+import 'package:trial_voice/reminder.dart';
 import 'account.dart';
 import 'package:flutter/material.dart';
 import 'transactions.dart';
 import 'add_product.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'billing2.dart';
+import 'products_list.dart';
 
 class StartPage extends StatelessWidget {
   StartPage({Key? key}) : super(key: key);
@@ -42,54 +44,70 @@ class StartPage extends StatelessWidget {
                 );
               },
               icon: Icons.account_circle,
-              color: Theme.of(context).primaryColor,
+              color: Colors.blue, // Change the color here
             ),
             CircularMenuItem(
               onTap: () {
                 // Handle Reports button tap
               },
               icon: Icons.bar_chart,
-              color: Theme.of(context).primaryColor,
+              color: Colors.green, // Change the color here
             ),
             CircularMenuItem(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const LastTransactionsPage(),
+                    builder: (context) => const BillListPage(),
                   ),
                 );
               },
               icon: Icons.history,
-              color: Theme.of(context).primaryColor,
+              color: Colors.orange, // Change the color here
             ),
             CircularMenuItem(
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddReminderPage(),
+                  ),
+                );
+              },
+              icon: Icons.add_alarm,
+              color: Colors.purple, // Change the color here
+            ),
+            CircularMenuItem(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductListViewScreen1(),
+                  ),
+                );
                 // Handle Inventory button tap
               },
               icon: Icons.inventory,
-              color: Theme.of(context).primaryColor,
+              color: Colors.red, // Change the color here
             ),
             CircularMenuItem(
               onTap: () {
                 // Handle AmyR Assistant button tap
               },
               icon: Icons.assistant,
-              color: Theme.of(context).primaryColor,
+              color: Colors.teal, // Change the color here
             ),
             CircularMenuItem(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SpeechSampleApp1(
-                     
-                    ),
+                    builder: (context) => SpeechSampleApp1(),
                   ),
                 );
               },
               icon: Icons.receipt_long,
-              color: Theme.of(context).primaryColor,
+              color: Color.fromARGB(255, 221, 54, 236), // Change the color here
             ),
             CircularMenuItem(
               onTap: () {
@@ -100,8 +118,8 @@ class StartPage extends StatelessWidget {
                   ),
                 );
               },
-              icon: Icons.receipt_long,
-              color: Theme.of(context).primaryColor,
+              icon: Icons.add,
+              color: Colors.cyan, // Change the color here
             ),
           ],
         ),

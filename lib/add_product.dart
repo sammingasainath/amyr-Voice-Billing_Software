@@ -141,6 +141,9 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+          leading: BackButton(
+            onPressed: Navigator.of(context).pop,
+          ),
           title: const Text(
             'AmyR AI Assist - Stock In',
             style: TextStyle(
@@ -592,17 +595,20 @@ class SpeechControlWidget extends StatelessWidget {
           onPressed: hasSpeech ? toggleListening : null,
           shape: RoundedRectangleBorder(
               side: BorderSide(
-                color:
-                    isListening ? const Color(0xFFFCC200) : const Color(0xFFaa0505),
+                color: isListening
+                    ? const Color(0xFFFCC200)
+                    : const Color(0xFFaa0505),
                 width: 2.0,
               ),
               borderRadius: BorderRadius.circular(50.0)),
-          backgroundColor: isListening ? const Color(0xFFaa0505) : const Color(0xFFFCC200),
+          backgroundColor:
+              isListening ? const Color(0xFFaa0505) : const Color(0xFFFCC200),
           tooltip: isListening ? 'Listening...' : 'Not listening',
           child: Image.asset(
             'assets/logo.png',
             alignment: Alignment.center,
-            color: isListening ? const Color(0xFFFCC200) : const Color(0xFFaa0505),
+            color:
+                isListening ? const Color(0xFFFCC200) : const Color(0xFFaa0505),
             width: 200,
             height: 200.0,
           )),

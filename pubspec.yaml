@@ -38,6 +38,9 @@ dependencies:
   circular_menu: ^2.0.1
   telephony: ^0.2.0
   shared_preferences: ^2.2.2
+  # share_plus: ^7.2.1
+  whatsapp_share: ^2.0.2
+  path_provider: ^2.1.2
 
 
   # The following adds the Cupertino Icons font to your application.

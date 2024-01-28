@@ -21,7 +21,7 @@ void main() async {
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return  StartPage();
+              return StartPage();
             }
             return const AuthScreen();
           },

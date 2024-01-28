@@ -1,18 +1,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.trial_voice">
 
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/> 
+    <!-- Add these permissions if not already present -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:label="trial_voice"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
+
+        <!-- Add this provider configuration -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.trial_voice.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
 
         <activity
             android:name=".MainActivity"
@@ -23,6 +31,7 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
+            <!-- Add the NormalTheme meta-data -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
@@ -38,5 +47,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
     </application>
 </manifest>

@@ -5,12 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'final_page.dart';
 
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:trial_voice/api/api_key.dart';
+import 'package:trial_voice/final_page.dart';
 import 'form.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'products_list.dart';
@@ -22,11 +24,15 @@ import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trial_voice/add_product.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+
+final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+QRViewController? qrController;
 
 class Item {
   final String name;
   final String quantityUnit;
-  final int quantity;
+  int quantity;
   final double price;
   final String barcode;
 
@@ -37,6 +43,27 @@ class Item {
     required this.price,
     required this.barcode,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'quantityUnit': quantityUnit,
+      'quantity': quantity,
+      'price': price,
+      'barcode': barcode,
+    };
+  }
+
+  // Create Item from JSON
+  factory Item.fromJson(Map<String, dynamic> json) {
+    return Item(
+      name: json['name'],
+      quantityUnit: json['quantityUnit'],
+      quantity: json['quantity'],
+      price: json['price'],
+      barcode: json['barcode'],
+    );
+  }
 }
 
 var ProductName = null;
@@ -46,6 +73,7 @@ var SP = null;
 var Stock = null;
 var result = false;
 String inCompleteTask = '';
+
 BuildContext? currentContext;
 var SearchText = '';
 
@@ -141,6 +169,9 @@ class _SpeechSampleApp1State extends State<SpeechSampleApp1> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+          leading: BackButton(
+            onPressed: Navigator.of(context).pop,
+          ),
           backgroundColor: const Color(0xFFFCC200),
           title: const Text(
             'AmyR AI Assist - Billing',
@@ -177,11 +208,11 @@ class _SpeechSampleApp1State extends State<SpeechSampleApp1> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductListViewScreen(),
+                            builder: (context) => BillingScreen(),
                           ),
                         );
                       },
-                      child: const Text('Product List'),
+                      child: const Text('Bill'),
                     ),
                   ],
                 ),
@@ -591,6 +622,7 @@ class _ProductListViewScreenState extends State<ProductListViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('Product List'),
       ),
@@ -631,7 +663,7 @@ class BillingPage extends StatefulWidget {
 
 class BillingPageState extends State<BillingPage> {
   final FocusNode productNameFocus = FocusNode();
-
+  bool qrCodeNeed = false;
   final TextEditingController nameController = TextEditingController();
 
   final TextEditingController quantityController = TextEditingController();
@@ -643,6 +675,7 @@ class BillingPageState extends State<BillingPage> {
     super.initState();
     getProductNameFromSharedPreferences();
     productNameFocus.requestFocus();
+    loadItemsFromSharedPreferences();
 
     // Use the initial value passed and set it in the controller
   }
@@ -735,7 +768,7 @@ class BillingPageState extends State<BillingPage> {
         const SizedBox(height: 10),
         Row(
           children: [
-            const Text('Quantity Unit: '),
+            const Text('Unit: '),
             DropdownButton<String>(
               value: selectedUnit,
               onChanged: (String? newValue) {
@@ -752,55 +785,90 @@ class BillingPageState extends State<BillingPage> {
                 },
               ).toList(),
             ),
+            // Container(
+            //   height: 50,
+            //   width: 50,
+            //   child: QRView(
+            //     key: qrKey,
+            //     onQRViewCreated: _onQRViewCreated,
+            //   ),
+            // ),
+
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    qrCodeNeed = true;
+                  });
+                },
+                icon: Icon(Icons.camera)),
           ],
         ),
         const SizedBox(height: 10),
-        TextField(
-          controller: quantityController,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: 'Quantity',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: barcodeController,
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            labelText: 'Barcode',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: priceController,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: 'Price',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            _addItem();
-          },
-          style: ElevatedButton.styleFrom(
-            primary: Colors.blue, // background color
-            onPrimary: Colors.white, // text color
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+        if (!(qrCodeNeed))
+          TextField(
+            controller: quantityController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Quantity',
+              border: OutlineInputBorder(),
             ),
           ),
-          child: const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Text(
-              'Add Item',
-              style: TextStyle(fontSize: 18),
+        if (!(qrCodeNeed!)) const SizedBox(height: 10),
+        if (!qrCodeNeed)
+          TextField(
+            controller: barcodeController,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              labelText: 'Barcode',
+              border: OutlineInputBorder(),
             ),
           ),
-        ),
+        if (!(qrCodeNeed)) const SizedBox(height: 10),
+        if (!(qrCodeNeed))
+          TextField(
+            controller: priceController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Price',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        if (!(qrCodeNeed)) const SizedBox(height: 20),
+        if (!(qrCodeNeed))
+          ElevatedButton(
+            onPressed: () {
+              _addItem();
+            },
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue, // background color
+              onPrimary: Colors.white, // text color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Text(
+                'Add Item',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ),
+        if ((qrCodeNeed))
+          Container(
+            height: 200,
+            child: QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              overlay: QrScannerOverlayShape(
+                borderColor: Colors.red,
+                borderRadius: 10,
+                borderLength: 30,
+                borderWidth: 10,
+                cutOutSize: 300,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -830,13 +898,55 @@ class BillingPageState extends State<BillingPage> {
             child: ListTile(
               title: Text('Name: ${items[index].name}'),
               subtitle: Text(
-                'Quantity: ${items[index].quantity} ${items[index].quantityUnit} | Price: \$${items[index].price.toStringAsFixed(2)}',
+                'Quantity: ${items[index].quantity} ${items[index].quantityUnit} | Price: ₹${items[index].price.toStringAsFixed(2)}',
               ),
             ),
           );
         },
       ),
     );
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    controller.scannedDataStream.listen((scanData) {
+      setState(() {
+        barcodeController.text = scanData.code!;
+        print(scanData.code);
+        qrCodeNeed = false;
+        // dispose();
+      });
+      // Fetch product details based on the scanned barcode
+
+      fetchProductDetails1(scanData.code!);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the QR controller
+    qrController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchProductDetails1(String barcode) async {
+    try {
+      String userUid = FirebaseAuth.instance.currentUser!.uid;
+      DocumentSnapshot productSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userUid)
+          .collection('Products')
+          .doc(barcode)
+          .get();
+
+      if (productSnapshot.exists) {
+        nameController.text = productSnapshot['productName'];
+        priceController.text = productSnapshot['sp'];
+        quantityController.text = '1';
+        // ... existing code
+      }
+    } catch (e) {
+      print('Error fetching product details: $e');
+    }
   }
 
   Future<List<String>> _getProductNames() async {
@@ -924,11 +1034,34 @@ class BillingPageState extends State<BillingPage> {
         items.add(newItem);
       });
 
+      saveItemsToSharedPreferences();
+
       // Clear the text fields after adding an item
       nameController.clear();
       quantityController.clear();
       priceController.clear();
       barcodeController.clear();
+    }
+  }
+
+  Future<void> saveItemsToSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> itemsJsonList =
+        items.map((item) => jsonEncode(item.toJson())).toList();
+    prefs.setStringList('items', itemsJsonList);
+  }
+
+  Future<void> loadItemsFromSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? itemsJsonList = prefs.getStringList('items');
+
+    if (itemsJsonList != null) {
+      List<Item> loadedItems = itemsJsonList
+          .map((jsonString) => Item.fromJson(jsonDecode(jsonString)))
+          .toList();
+      setState(() {
+        items = loadedItems;
+      });
     }
   }
 }
