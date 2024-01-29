@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-
-
-
-
 class MyQRCodeScreen extends StatelessWidget {
   const MyQRCodeScreen({Key? key, required this.amount}) : super(key: key);
 
@@ -12,16 +8,8 @@ class MyQRCodeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        
-        title: Text(
-          'QR Code ',
-          textAlign: TextAlign.center,
-        ),
-        actions: [],
-      ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             'You Are Paying $amount Rs.', //amount.toStringAsFixed(2),

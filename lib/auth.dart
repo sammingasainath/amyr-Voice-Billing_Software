@@ -63,7 +63,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: const Color.fromARGB(255, 34, 120, 190),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -126,9 +126,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ElevatedButton(
                             onPressed: _submit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
+                              backgroundColor: Colors.blue,
                             ),
                             child: Text(_isLogin ? 'Login' : 'Signup'),
                           ),
@@ -138,9 +136,12 @@ class _AuthScreenState extends State<AuthScreen> {
                                 _isLogin = !_isLogin;
                               });
                             },
-                            child: Text(_isLogin
-                                ? 'Create an account'
-                                : 'I already have an account'),
+                            child: Text(
+                              _isLogin
+                                  ? 'Create new account'
+                                  : 'I already have an account',
+                              style: const TextStyle(color: Colors.black),
+                            ),
                           ),
                         ],
                       ),

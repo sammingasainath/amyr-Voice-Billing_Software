@@ -106,10 +106,10 @@ class _BillingScreenState extends State<BillingScreen> {
 
     // Navigate back to the previous screen
     WhatsappShare.share(
-        text: 'THank you for shopping with us. Here is your bill.',
-        phone: customerNumberController.text,
-        linkUrl: url //country code + phone number
-        );
+      text: 'Thank you for shopping with us. Here is your bill.',
+      phone: customerNumberController.text,
+      linkUrl: url, //country code + phone number
+    );
     Navigator.pop(context);
   }
 
@@ -135,127 +135,161 @@ class _BillingScreenState extends State<BillingScreen> {
   }
 
   Widget _buildItemList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Items:',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        if (widget.items.isEmpty)
-          Text('No items added yet.')
-        else
-          Column(
-            children: widget.items.map((item) {
-              double itemAmount = item.price * item.quantity;
-
-              return ListTile(
-                title: Text(item.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Quantity: ${item.quantity}'),
-                    Text('Item Amount: ₹${itemAmount.toStringAsFixed(2)}'),
-                    Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              item.quantity++;
-                            });
-                          },
-                          child: Text('+'),
-                        ),
-                        SizedBox(width: 5),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (item.quantity > 0) {
-                              setState(() {
-                                item.quantity--;
-                              });
-                            }
-                          },
-                          child: Text('-'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    setState(() {
-                      widget.items.remove(item);
-                    });
-                  },
-                ),
-              );
-            }).toList(),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Items:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        SizedBox(height: 10),
-        Text(
-          'Total Amount: ₹${calculateTotalAmount().toStringAsFixed(2)}',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      ],
+          const SizedBox(height: 10),
+          if (widget.items.isEmpty)
+            const Text('No items added yet.')
+          else
+            Column(
+              children: widget.items.map((item) {
+                double itemAmount = item.price * item.quantity;
+
+                return ListTile(
+                  title: Text(item.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Quantity: ${item.quantity}'),
+                      Text('Item Amount: ₹${itemAmount.toStringAsFixed(2)}'),
+                      Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                item.quantity++;
+                              });
+                            },
+                            child: const Icon(Icons.add),
+                          ),
+                          const SizedBox(width: 5),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (item.quantity > 0) {
+                                setState(() {
+                                  item.quantity--;
+                                });
+                              }
+                            },
+                            child: const Icon(Icons.remove),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        widget.items.remove(item);
+                      });
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          const SizedBox(height: 10),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Billing Details'),
+      resizeToAvoidBottomInset: false,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.mic),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: customerNameController,
-                decoration: InputDecoration(labelText: 'Customer Name'),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: customerNumberController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(labelText: 'Customer Number'),
-              ),
-              IconButton(
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 26, 112, 211),
+        title: const Text('Billing Details'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: customerNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Customer Name',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: customerNumberController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Customer Number',
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                ),
+                IconButton(
                   onPressed: () {
                     showModal(context);
                   },
-                  icon: Icon(Icons.qr_code)),
-              SizedBox(height: 10),
-              DropdownButton<String>(
-                value: selectedPaymentMode,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedPaymentMode = newValue!;
-                  });
-                },
-                items: ['Cash', 'Card', 'UPI'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  saveBillToFirestore();
-                },
-                child: Text('Save Bill'),
-              ),
-              SizedBox(height: 20),
-              _buildItemList(),
-            ],
+                  icon: const Icon(Icons.qr_code),
+                ),
+                const SizedBox(height: 5),
+                DropdownButton<String>(
+                  value: selectedPaymentMode,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedPaymentMode = newValue!;
+                    });
+                  },
+                  items: ['Cash', 'Card', 'UPI'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 5),
+                ElevatedButton(
+                  onPressed: () async {
+                    saveBillToFirestore();
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Save Bill',
+                      ),
+                      SizedBox(width: 5),
+                      Icon(Icons.save),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
           ),
-        ),
+          Expanded(
+            child: _buildItemList(),
+          ),
+          Container(
+            color: Color.fromARGB(
+                255, 45, 94, 192), // Background color for total amount section
+            padding: const EdgeInsets.all(25),
+            child: Text(
+              'Total Amount: ₹${calculateTotalAmount().toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }

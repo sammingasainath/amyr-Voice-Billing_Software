@@ -344,7 +344,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
         if ((productjson['productName'] != null)) {
           ProductName = productjson['productName'];
-          print(ProductName);
         } else if (ProductName != null) {
           ProductName = ProductName;
         } else {
@@ -353,7 +352,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
         if (productjson['MRP'] != null) {
           MRP = productjson['MRP'];
-          print(MRP);
         } else if (MRP != null) {
           MRP = MRP;
         } else {
@@ -362,7 +360,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
         if (productjson['CP'] != null) {
           CP = productjson['CP'];
-          print(CP);
         } else if (CP != null) {
           CP = CP;
         } else {
@@ -371,7 +368,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
         if (productjson['SP'] != null) {
           SP = productjson['SP'];
-          print(SP);
         } else if (SP != null) {
           SP = SP;
         } else {
@@ -380,7 +376,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
 
         if (productjson['Stock'] != null) {
           Stock = productjson['Stock'];
-          print(Stock);
         } else if (Stock != null) {
           Stock = Stock;
         } else {
@@ -390,7 +385,6 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
         // String role = message['role'];
         // print(role);
 
-        print(message);
         // setState(() {
         //   lastWords = message.toString();
         // });
@@ -401,23 +395,23 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
             SP == null ||
             Stock == null) {
           await speak('Please Fill $inCompleteTask');
-          Timer(const Duration(seconds: 4), () {
+          Timer(const Duration(seconds: 5), () {
             startListening();
           });
         } else {
-          await speak('Scan Here ?');
+          await speak('Scan Barcode ?');
+
           showModal(currentContext);
+          
         }
 
         return (productjson);
       } else {
-        print('Error: ${response.statusCode}');
         // print('Response Body: ${response.body}');
         // Handle errors here if needed
         return {'error': 'Failed to get response'};
       }
     } catch (error) {
-      print('Error: $error');
       // Handle errors here if needed
       return {'error': 'Failed to make the request'};
     }

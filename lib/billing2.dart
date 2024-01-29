@@ -168,11 +168,12 @@ class _SpeechSampleApp1State extends State<SpeechSampleApp1> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           leading: BackButton(
             onPressed: Navigator.of(context).pop,
           ),
-          backgroundColor: const Color(0xFFFCC200),
+          backgroundColor: Color.fromARGB(255, 5, 119, 201),
           title: const Text(
             'AmyR AI Assist - Billing',
             style: TextStyle(
@@ -182,49 +183,54 @@ class _SpeechSampleApp1State extends State<SpeechSampleApp1> {
           centerTitle: true,
         ),
         body: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // Change to space between
           children: [
-            Flexible(child: BillingPage()),
-            // Expanded(
-            //   child: Container(
-            //     padding: EdgeInsets.all(30),
-            //     decoration: BoxDecoration(
-            //       borderRadius: BorderRadius.circular(10),
-            //     ),
-            //     child: RecognitionResultsWidget(
-            //         lastWords: lastWords, level: level),
-            //   ),
-            // ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    InitSpeechWidget(_hasSpeech, initSpeechState),
-                    RecognitionResultsWidget(lastWords: lastWords),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BillingScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('Bill'),
+            Expanded(child: BillingPage()), // Change to Expanded
+            Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.blue, // background color
+                      onPrimary: Colors.white, // text color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      minimumSize: Size(200, 50), // Increase the width
                     ),
-                  ],
-                ),
-                SpeechControlWidget(
-                  _hasSpeech,
-                  speech.isListening,
-                  speech.isListening ? stopListening : startListening,
-                ),
-              ],
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BillingScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Checkout        >'),
+                  ),
+                  SizedBox(width: 16), // Add some space between buttons
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      InitSpeechWidget(_hasSpeech, initSpeechState),
+                      RecognitionResultsWidget(lastWords: lastWords),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        floatingActionButton: SpeechControlWidget(
+          _hasSpeech,
+          speech.isListening,
+          speech.isListening ? stopListening : startListening,
+        ), // Add your FAB widget
       ),
     );
   }
@@ -419,46 +425,10 @@ class RecognitionResultsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 5,
-            spreadRadius: 2,
-            color: Colors.grey.withOpacity(0.3),
-          ),
-        ],
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        lastWords,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 16),
-      ),
-    );
+    return Container();
   }
 }
 
-// class HeaderWidget extends StatelessWidget {
-//   const HeaderWidget({
-//     Key? key,
-//   }) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Center(
-//       child: Text(
-//         'Press Start ',
-//         style: TextStyle(fontSize: 22.0),
-//       ),
-//     );
-//   }
-// }
-
-/// Display the current error status from the speech
-/// recognizer
 class ErrorWidget extends StatelessWidget {
   const ErrorWidget({
     Key? key,
@@ -508,28 +478,36 @@ class SpeechControlWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      // bottom: 16.0,
-      // right: 10.0,
-      height: 100,
-      width: 100,
-      child: FloatingActionButton(
+      height: 80,
+      width: 80,
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        child: FloatingActionButton(
           isExtended: true,
           onPressed: hasSpeech ? toggleListening : null,
           shape: RoundedRectangleBorder(
-              side: BorderSide(
-                color:
-                    isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(50.0)),
-          backgroundColor: isListening ? Color(0xFFaa0505) : Color(0xFFFCC200),
+            side: BorderSide(
+              color: isListening
+                  ? Color.fromARGB(255, 18, 121, 238)
+                  : Color.fromARGB(255, 0, 0, 0),
+              width: 2.0,
+            ),
+            borderRadius: BorderRadius.circular(50.0),
+          ),
+          backgroundColor: isListening
+              ? Color.fromARGB(255, 0, 0, 0)
+              : Color.fromARGB(255, 24, 99, 229),
           child: Image.asset(
             'assets/logo.png',
             alignment: Alignment.center,
-            color: isListening ? const Color(0xFFFCC200) : Color(0xFFaa0505),
-            width: 200,
-            height: 200.0,
-          )),
+            color: isListening
+                ? Color.fromARGB(255, 27, 141, 233)
+                : Color.fromARGB(255, 0, 0, 0),
+            width: 80,
+            height: 80.0,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -738,7 +716,7 @@ class BillingPageState extends State<BillingPage> {
           future: _getProductNames(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
+              return Container();
             } else if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -878,28 +856,21 @@ class BillingPageState extends State<BillingPage> {
       child: ListView.builder(
         itemCount: items.length,
         itemBuilder: (context, index) {
-          return Dismissible(
-            key: Key(items[index].name),
-            direction: DismissDirection.endToStart,
-            onDismissed: (direction) {
-              setState(() {
-                items.removeAt(index);
-              });
-            },
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.all(10),
-              child: const Icon(
-                Icons.delete,
-                color: Colors.white,
-              ),
+          return ListTile(
+            title: Text('Name: ${items[index].name}'),
+            subtitle: Text(
+              'Quantity: ${items[index].quantity} ${items[index].quantityUnit} | Price: ₹${items[index].price.toStringAsFixed(2)}',
             ),
-            child: ListTile(
-              title: Text('Name: ${items[index].name}'),
-              subtitle: Text(
-                'Quantity: ${items[index].quantity} ${items[index].quantityUnit} | Price: ₹${items[index].price.toStringAsFixed(2)}',
+            trailing: IconButton(
+              icon: Icon(
+                Icons.delete,
+                color: Color.fromARGB(255, 212, 116, 110),
               ),
+              onPressed: () {
+                setState(() {
+                  items.removeAt(index);
+                });
+              },
             ),
           );
         },

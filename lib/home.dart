@@ -1,9 +1,8 @@
-import 'package:circular_menu/circular_menu.dart';
+import 'package:flutter/material.dart';
 import 'package:trial_voice/chatbot.dart';
 import 'package:trial_voice/reminder.dart';
 import 'package:trial_voice/reports.dart';
 import 'account.dart';
-import 'package:flutter/material.dart';
 import 'transactions.dart';
 import 'add_product.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,11 +13,22 @@ class StartPage extends StatelessWidget {
   StartPage({Key? key}) : super(key: key);
   final TextEditingController billingNameController = TextEditingController();
 
+  // Function to navigate to different pages based on the menu items
+  void navigateToPage(BuildContext context, Widget page) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AmyR - Automate my Retail'),
+        title: const Text(
+          'AmyR- Automate my Retail',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+        ),
         actions: [
           ElevatedButton.icon(
             onPressed: () {
@@ -31,109 +41,122 @@ class StartPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: CircularMenu(
-          alignment: Alignment.center,
-          radius: 100,
-          toggleButtonColor: Theme.of(context).primaryColor,
-          items: [
-            CircularMenuItem(
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16.0,
+          mainAxisSpacing: 16.0,
+          childAspectRatio: 1.2, // Adjusted aspect ratio
+          children: [
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AccountPage(),
-                  ),
-                );
+                navigateToPage(context, const AccountPage());
               },
               icon: Icons.account_circle,
-              color: Colors.blue, // Change the color here
+              title: 'Account',
+              color: Colors.blue,
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FullScreenImagePage(),
-                  ),
-                );
+                navigateToPage(context, const FullScreenImagePage());
               },
               icon: Icons.bar_chart,
-              color: Colors.green, // Change the color here
+              title: 'Reports',
+              color: Colors.green,
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const BillListPage(),
-                  ),
-                );
+                navigateToPage(context, const BillListPage());
               },
               icon: Icons.history,
-              color: Colors.orange, // Change the color here
+              title: 'History',
+              color: Colors.orange,
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddReminderPage(),
-                  ),
-                );
+                navigateToPage(context, const AddReminderPage());
               },
               icon: Icons.add_alarm,
-              color: Colors.purple, // Change the color here
+              title: 'Add Reminder',
+              color: Colors.purple,
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductListViewScreen1(),
-                  ),
-                );
-                // Handle Inventory button tap
+                navigateToPage(context, ProductListViewScreen1());
               },
               icon: Icons.inventory,
-              color: Colors.red, // Change the color here
+              title: 'Inventory',
+              color: Colors.red,
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChatBotPage(),
-                  ),
-                );
+                navigateToPage(context, const ChatBotPage());
               },
               icon: Icons.assistant,
-              color: Colors.teal, // Change the color here
+              title: 'Chatbot',
+              color: Colors.teal,
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SpeechSampleApp1(),
-                  ),
-                );
+                navigateToPage(context, SpeechSampleApp1());
               },
               icon: Icons.receipt_long,
-              color: Color.fromARGB(255, 221, 54, 236), // Change the color here
+              title: 'Quick Billing',
+              color: Color.fromARGB(255, 221, 54, 236),
             ),
-            CircularMenuItem(
+            MenuItemCard(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SpeechSampleApp(),
-                  ),
-                );
+                navigateToPage(context, const SpeechSampleApp());
               },
               icon: Icons.add,
-              color: Colors.cyan, // Change the color here
+              title: 'Add Products',
+              color: Colors.cyan,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Custom widget for menu item as a card
+class MenuItemCard extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final String title;
+  final Color color;
+
+  const MenuItemCard({
+    required this.onTap,
+    required this.icon,
+    required this.title,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Card(
+        color: color,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 36, color: Colors.white),
+              SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(color: Colors.white, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

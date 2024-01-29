@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:trial_voice/add_product.dart';
 import 'barcode_for_product.dart';
 
 class AddProductModal extends StatefulWidget {
