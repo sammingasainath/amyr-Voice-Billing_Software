@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FlutterNativeSplash.remove();
   runApp(
     MaterialApp(
         title: 'AmyR- Automate my Retail',
@@ -28,5 +31,3 @@ void main() async {
         )),
   );
 }
-
-
